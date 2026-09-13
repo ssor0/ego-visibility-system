@@ -1,0 +1,42 @@
+
+
+16 differeent layers for each kind of item in vis data
+
+
+
+data needed to generate correct vis data for objectNode:
+  - mbb bounds
+
+  - depth (integer distance on z axis?) (value of 0 makes game
+    test visibility?)
+
+data needed to generate correct vis data for staticItem:
+  - mbb bounds
+
+  - index (id)/number of object from file that contains it
+    (for pssgs, indices are same as order of nodes in file?)
+
+  - layer number
+
+  - 
+
+
+layer for global illumination?
+
+- 0 (0x240): track geometry (TrackBlock, road surface only or all geometry?) proof
+
+   bounds and index come from tracksplit.pssg
+
+
+- 1 (0x258): ground cover (1014b62ba) (not yet seen in file?) proof
+
+   bounds and index
+
+- 2 (0x270): static ornaments proof
+- 3 (0x288): static trees proof
+- 4 (0x2A0): crowd and led flares (flares only applicable in grid 2? still called?) (i.e. OrganismManager, POrganismRootNode) (old:v function call? 1014b6f79)  unable to make not render by setting numItems to 0 in locations as others, but value seems to fluctuate based on number of groups of crowds on screen
+- ? (0x2B8, 0x2bc?) (rest possibly in MGR::buildGPUBuffers) (0 in lldb?)
+- 6 (0x2D0): Interactive and non-interactive water (iwater seen in vis file for surface test track)
+- 7 (0x2E8?): ground clutter? (‘entities’?Cones, moveable barricades?) (Separate from ground cover?) (1014b626d) (0 in lldb)
+- 8 (0x300): lights (local?) (0 in lldb)
+- no further indices seen yet at least from ga disassembly, may be unused

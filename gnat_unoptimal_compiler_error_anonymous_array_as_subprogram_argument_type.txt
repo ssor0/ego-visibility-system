@@ -1,0 +1,15 @@
+gcc -c -save-temps view_cell_read_test.adb
+view_cell_read_test.adb:87:30: error: anonymous array definition not allowed here
+view_cell_read_test.adb:87:36: error: reserved word "of" cannot be used as identifier
+view_cell_read_test.adb:88:04: error: reserved word "begin" cannot be used as identifier
+view_cell_read_test.adb:90:04: error: reserved word "end" cannot be used as identifier
+view_cell_read_test.adb:98:19: error: anonymous array definition not allowed here
+view_cell_read_test.adb:99:21: error: anonymous array definition not allowed here
+view_cell_read_test.adb:100:05: error: reserved word "for" cannot be used as identifier
+view_cell_read_test.adb:100:31: error: reserved word "use" cannot be used as identifier
+view_cell_read_test.adb:127:01: error: reserved word "begin" cannot be used as identifier
+view_cell_read_test.adb:129:13: error: constraint not allowed here
+view_cell_read_test.adb:131:04: error: reserved word "if" cannot be used as identifier
+view_cell_read_test.adb:133:07: error: reserved word "return" cannot be used as identifier
+view_cell_read_test.adb:135:04: error: reserved word "elsif" cannot be used as identifier
+gnatmake: "view_cell_read_test.adb" compilation error

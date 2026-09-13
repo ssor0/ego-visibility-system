@@ -1,0 +1,87 @@
+with ada.text_io; use ada.text_io;
+
+with interfaces; use intrefaces;
+
+
+procedure calcVisibleSet is
+
+
+   subtype NEuint is unsigned_32;
+   subtype NEfloat is float;
+
+   type NeBool is new boolean with size => 8, convention => C;
+
+   --  !  index for arrays unsigned_64?
+
+
+   type NePoint3 is record
+      x, y, z, unused : float;
+   end record;
+
+
+   --  ! for unsigned char*
+   type byte_array is array (natural range <>) of unsigned_8;
+
+
+
+   type DynamicObjectsInNode is record
+   end record;
+
+
+   --  original name PVSType
+   type PVS_Type is (NoPVS, PerNodePVS, PerItemPVS);
+
+
+   type QueryParams is record
+      frustum : byte_array (1 .. 16#e0#);  -- ! temp, NeFrustom
+      sphere : byte_array (1 .. 16#10#); --  ! temp, NeSphere
+      fov : float;
+      pvsType : PVS_Type;
+      omssCutoff : float;  --  ! omission cutoff?
+      padding_0xfc_0x100 : byte_array (1 .. 4);
+      sortingPosition : NePoint3;
+      returnAllItems : NeBool;
+      padding_0x111_0x113 : byte_array (1 .. 3);
+      staticLayerMask : integer;
+      dynamicLayerMask : integer;
+      sortFrontToBack : NeBool;
+      padding_0x11d_0x11f : byte_array (1 .. 3);
+      calculatedCutoff : float;
+      numUserClipPlanes : integer;
+      padding_0x128_0x12f : byte_array (1 .. 8);
+      userClipPlanes : byte_array (1 .. 16#30#); --  ! temp, NePlane[3] is class?
+      pad : unsigned_32;  --  ! originally length 1 array of 32 bit uint
+      padding_0x164_0x16f : byte_array (1 .. 12);
+   end record;
+
+   pragma compile_time_error (QueryParams'size / 8 /= 16#170#);
+
+
+   type Item is record
+      id : NEuint;
+      depth : NEfloat;
+   end record;
+   type Item_ptr is access all Item;
+   type Item_array is array (natural range <>) of item;
+   type Item_array_ptr is access all item_array;
+
+
+   type VisibleLayer is record
+      numItems : NEUint;
+      itemList : Item_array_ptr;
+      maxItems : NEuint;
+   end record;
+
+   type VisibleLayer_array is array (natural range <>) of VisibleLayer;
+
+
+
+
+   type VisibleSet is record
+   end record;
+
+
+
+
+begin
+end calcVisibleSet;

@@ -1,0 +1,157 @@
+# visibility system
+
+(data structures, formats and logic overview?)
+
+used for/handles occlusion culling/hidden surface/object elimination and
+(some part of?) lod (of static items only)
+
+
+(preceeded by worker thread, NeThreePhaseProcess etc?)
+
+below is called each frame
+
+neon::NeVisibilityJob::doJob()
+
+  -> neon::VisibilitySystem::calcVisibleSet(neon::NeVisibilitySystem::QueryParams const&, neon::NeVisibilitySystem::VisibleSet&)
+
+    -> (recursive) neon::findViewCell(neon::VisibilitySystem::ViewCell const*, neon::VisibilitySystem::ViewCell const&, Vectormath::Aos::Point3 const&, float const*, float const*)
+
+    if queryParams.returnAllItems then
+
+      -> neon::VisibilitySystem::addAllItemsToVisibleSet(neon::NeVisibilitySystem::QueryParams const&, neon::NeVisibilitySystem::VisibleSet&)
+        -> neon::VisibilitySystem::DynamicObjectRepository::addAddUsedObjectsToLists(neon::NeVisibilitySystem::QueryParams const&, neon::NeVisibilitySystem ::VisibleSet&)
+
+    else
+
+      -> neon::calcVisibleSet(neon::VisibilitySystem::DynamicObjectsInNode const*, neon::VisibilitySystem::ObjectNode const&, unsigned char const*, neon::NeVisibilitySystem::QueryParams const&, neon::NeVisibilitySystem::VisibleSet&)
+        -> * various TBD conditional statements
+        -> * calls to polymorphic neon::neVisibilityTest()
+
+        -> neon::addObjectsToListTrivially(neon::VisibilitySystem::DynamicObjectsInNode const*, neon::VisibilitySystem::ObjectNode const&, unsigned char const*, neon::NeVisibilitySystem::QueryParams const&, neon::NeVisibilitySystem::VisibleSet&)
+          -> (further calls only to llvm c++ standard library)
+        -> * TBD conditional statement(s)
+
+        -> neon::addObjectsToListWithVisibilityTest(neon::VisibilitySystem::DynamicObjectsInNode const*, neon::VisibilitySystem::ObjectNode const&, unsigne d char const*, neon::NeVisibilitySystem::QueryParams const&, neon::NeVisibilitySystem::VisibleSet&)
+          -> (TBD if needed?)
+       
+
+
+## definitions
+
+### item
+represents the bottom level/most granular/smallest unit of individual entity/object/data that the visibility system
+manages, can be static (non-moving) or dynamic (moving) i.e. a track ornament, tree, vehicle etc.
+
+items are contained/grouped within/by object nodes
+
+#### static item
+an item that doesnt change positions in environment (buildings, trees, ground cover, crowd etc)
+
+all item related data in track.vis is for static items
+
+#### dynamic item
+an item that may change positions on track (animated ornaments, vehicles etc.)
+
+there is no visibility data for dynamic items in track.vis (since they are 'dynamic' by nature,
+their visibility has to be determined at run time)
+
+visibility information for dynamic items cant be pre-computed and therefor 
+
+### object node
+represents a chunk/area of geometry of a track and all items contained within it
+
+corresponds with view cell region size/location?
+
+### view cell
+cubic(?) area of the drivable(?) track area that the player could be in.
+
+can be imagined as grid overlayed on top of track, only keeping cells of the
+grid that are/were/fell within the areas of the track a player could drive
+
+used to determine where player is on track and what is actually visible or
+will soon be visible in/from that area of the track
+
+pvs offset in leaf view is cell for compressed pvs data in file
+
+### layer
+a specific kind of item, e.g. track chunk, an ornament, tree, etc.
+used to differentiate between different types/kinds of items
+
+### depth?
+
+## on disk, precomputed
+
+
+### track.vis
+
+header, 4 sections, last unused in retail game
+
+
+#### header
+
+128 bytes
+
+
+#### view cell regions/bounds/tree/spatial index. (flattened, serialized?) kd-tree? (section 1)
+
+spatial index 
+traveresed (sequentially?) every frame, used to find area of track car is located in.
+tree nodes searched until matching leaf node reached, leaf contains encoding of and
+offset to precomputed PVS data (section 2) in file that corresponds to view cell player is in
+
+
+#### PVS data (section 2)
+
+does encoding scheme (also?) indicate size of count/length integer?
+
+[run-length encoded](https://en.wikipedia.org/wiki/Run-length_encoding) list of 
+8, 16, 64 or 128 bit integers used as bit strings, each run is preceeded by length/count
+indicating number of sequential instances of same value. count value is positivee if run
+consists of literal values (i.e. number of sequential instances wasnt large enough to
+warrant compression, or were none). count value is negative if run compresseed  and is
+then added with 128 (0x80) to determine number of sequential values in run.
+
+same number of bit strings per view cell,
+each bit in bit string represents visibility state of every static item across entire track from that view cell.
+
+0 indicates item is not visible, 1 indicates item is visible or is/will be visible in an surrounding/adjacent/approaching view cell (to prevent visual pop-in).
+
+pvs data for active view cell is decompressed each frame and stored in
+single statically sized buffer (TBD size, differs per game?).
+
+(move?) RLE compression technically optional at engine level but not yet seen
+game or situation where data is left uncompressed.
+
+
+
+RLE is a fitting compression method for this kind of data/scenario/problem because, unless temporarily
+occluded by an object like a building or elevation change, most adjacent items of a track are either all visible (in front of you) or
+not visible (behind you) in large groups/sections at a time. for example, 20 1 byte bit strings of all 1s would only take up
+2 bytes (1 byte for the count, i.e. 20, and 1 for the actual data/value, 255)
+
+
+
+
+
+
+representing all potentially visible (static?) items in current view cell, region.
+
+doesn't contain data that maps, links pvs data with further, next section, game
+uncompresses pvs data for current, active view cell (each frame?) and iterates
+over object nodes adding ids of static items that have bit field with 1?
+
+section 3
+potentially visible in current view cell, region 
+
+?
+id, index integers per view cell, region can be encoded as 8, 16, 64, 128 bits? 
+never seen encoding differ between view cells, only ever seen 8 bit encoding
+(grid autosport)?
+
+
+#### object nodes and static items (object node tree?)
+
+
+## in engine, memory, runtime
+
+

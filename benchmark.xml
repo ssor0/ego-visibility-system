@@ -1,0 +1,44 @@
+<?xml version="1.0" standalone="yes" ?>
+<!-- Example benchmark mode control file
+
+  Enable by adding -benchmark <benchmark_filename.xml> to the command line parameters
+
+  Specify car livery and track list as shown below (up to 10 tracks, 8 cars per track):
+  
+  For a list of track and car names, browse to the GRID Autosport installation directory and look at the folder names within the 'tracks' and 'cars' folders
+  
+  <track country="cities" name="chicago" route="route_0">
+    <car name="z28" livery="user" />
+  </track>
+  <track country="cities" name="miami" route="route_0">
+    <car name="mac" livery="user" />
+    <car name="z28" livery="user" />
+  </track>
+  
+  Options: 
+    skipreplays: Don't benchmark the after race replay
+    outputfilename: Prefix for the benchmark results file, saved in Documents\My Games\GRID Autosport\benchmarks
+    hardwaresettings: Use this file for the hardware settings during the benchmark
+	lighting: day, day_alt, night, night_alt
+	weather: dry, wet
+	infinite_loop: true,false - Will be overridden by the ingame setting if NOT run from the commandline
+ 
+  Note that there may be some variation in results when using more than 1 car
+    
+-->
+<config outputfilename="GRIDAutosport_Benchmark" hardwaresettings="hardware_settings_config.xml" cycle_camera="true" infinite_loop="false" >
+  <track country="circuits" name="jarama" route="route_0" lighting="day" weather="dry" laps="1" number_cars="12" >
+    <car name="sls" livery="user" ai_driver="AmericanaI_1_1" ai_driver0="AmericanaI_1_0" grid="0" />
+    <car name="320" livery="06" ai_driver="AmericanaM_1_1" ai_driver0="AmericanaM_1_0" grid="1" />
+    <car name="sls" livery="04" ai_driver="ProfF_1_1" ai_driver0="ProfF_1_0" grid="2" />
+    <car name="320" livery="user" ai_driver="AllN_1_1" ai_driver0="AllN_1_0" grid="3" />
+    <car name="sls" livery="08" ai_driver="MoneyH_1_1" ai_driver0="MoneyH_1_0" grid="4" />
+    <car name="g40" livery="user" ai_driver="ShowO_1_1" ai_driver0="ShowO_1_0" grid="5" />
+    <car name="sls" livery="03" ai_driver="UnderO_1_1" ai_driver0="UnderO_1_0" grid="6" />
+    <car name="320" livery="user" ai_driver="MoneyJ_1_1" ai_driver0="MoneyJ_1_0" grid="7" />
+   	<car name="320" livery="06" ai_driver="AllB_1_1" ai_driver0="AllB_1_0" grid="8" />
+   	<car name="320" livery="01" ai_driver="UnderBBB_1_1" ai_driver0="UnderBBB_1_0" grid="9" />
+    <car name="g40" livery="user" ai_driver="UnderM_1_1" ai_driver0="UnderM_1_0" grid="10" />
+    <car name="320" livery="01" ai_driver="AllH_1_1" ai_driver0="AllH_1_0" grid="11" />
+  </track>
+</config>

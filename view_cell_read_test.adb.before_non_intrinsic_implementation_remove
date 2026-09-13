@@ -1,0 +1,604 @@
+with ada.text_io; use ada.text_io;
+with ada.command_line;
+with ada.streams.stream_io;
+with ada.directories;
+
+with interfaces; use interfaces;
+
+with gnat.sse;
+with gnat.sse.vector_types;
+
+
+procedure view_cell_read_test is --return ada.command_line.exit_status is
+
+   package SIO renames ada.streams.stream_io;
+   use type sio.count;
+
+   package CLI renames ada.command_line;
+
+   package Dir renames ada.directories;
+   use type dir.file_kind;
+
+   package sse_vt renames gnat.sse.vector_types;
+   package sse renames gnat.sse;
+
+
+    function ia32_psrldq (vector : sse_vt.m128i; shift_amount : integer) return sse_vt.m128i
+      with import, inline_always, external_name => "__builtin_ia32_psrldqi128", convention => intrinsic;
+
+    function ia32_pslldq (vector : sse_vt.m128i; shift_amount : integer) return sse_vt.m128i
+      with import, inline_always, external_name => "__builtin_ia32_pslldqi128", convention => intrinsic;
+
+
+   function ia32_por128 (left, right : in  sse_vt.m128i) return sse_vt.m128i
+     with import, inline_always, external_name => "__builtin_ia32_por128", convention => intrinsic;
+
+    --pragma Import (Intrinsic, ia32_psrldq, "__builtin_ia32_psrldqi128");
+
+   --type vf32_view is array (1 .. 4) of sse.float32 with alignment => sse.vector_align;
+   type v4t is array (positive range 1 .. 4) of float
+     with alignment => sse.vector_align,
+          pack      => true;
+
+
+   function imm (value : in integer) return integer is
+     (value) with inline, static;
+
+
+   type byte_shift_amount is
+     (shift_1_byte,
+      shift_2_bytes,
+      shift_3_bytes,
+      shift_4_bytes,
+      shift_5_bytes,
+      shift_6_bytes,
+      shift_7_bytes,
+      shift_8_bytes,
+      shift_9_bytes,
+      shift_10_bytes,
+      shift_11_bytes,
+      shift_12_bytes,
+      shift_13_bytes,
+      shift_14_bytes,
+      shift_15_bytes,
+      shift_16_bytes);
+
+   function psrldq (vector : in v4t; shift : in byte_shift_amount) return v4t with inline is
+      vec_m128_view : sse_vt.m128i with address => vector'address;
+
+      result_vec       : v4t;
+      result_m128_view : sse_vt.m128i with address => result_vec'address;
+   begin
+      case shift is
+         when shift_1_byte => result_m128_view := ia32_psrldq (vec_m128_view, 1 * 8);
+         when shift_2_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 2 * 8);
+         when shift_3_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 3 * 8);
+         when shift_4_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 4 * 8);
+         when shift_5_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 5 * 8);
+         when shift_6_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 6 * 8);
+         when shift_7_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 7 * 8);
+         when shift_8_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 8 * 8);
+         when shift_9_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 9 * 8);
+         when shift_10_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 10 * 8);
+         when shift_11_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 11 * 8);
+         when shift_12_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 12 * 8);
+         when shift_13_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 13 * 8);
+         when shift_14_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 14 * 8);
+         when shift_15_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 15 * 8);
+         when shift_16_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 16 * 8);
+      end case;
+      return result_vec;
+   end psrldq;
+
+
+   function pslldq (vector : in v4t; shift : in byte_shift_amount) return v4t with inline is
+      vec_m128_view : sse_vt.m128i with address => vector'address;
+
+      result_vec       : v4t;
+      result_m128_view : sse_vt.m128i with address => result_vec'address;
+   begin
+      case shift is
+         when shift_1_byte => result_m128_view := ia32_pslldq (vec_m128_view, 1 * 8);
+         when shift_2_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 2 * 8);
+         when shift_3_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 3 * 8);
+         when shift_4_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 4 * 8);
+         when shift_5_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 5 * 8);
+         when shift_6_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 6 * 8);
+         when shift_7_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 7 * 8);
+         when shift_8_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 8 * 8);
+         when shift_9_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 9 * 8);
+         when shift_10_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 10 * 8);
+         when shift_11_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 11 * 8);
+         when shift_12_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 12 * 8);
+         when shift_13_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 13 * 8);
+         when shift_14_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 14 * 8);
+         when shift_15_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 15 * 8);
+         when shift_16_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 16 * 8);
+      end case;
+      return result_vec;
+   end pslldq;
+
+
+   function por_128 (vector_1, vector_2 : in v4t) return v4t with inline is
+      vec1_m128_view : sse_vt.m128i with address => vector_1'address;
+      vec2_m128_view : sse_vt.m128i with address => vector_2'address;
+
+      result_vec       : v4t;
+      result_m128_view : sse_vt.m128i with address => result_vec'address;
+   begin
+      result_m128_view := ia32_por128 (vec1_m128_view, vec2_m128_view);
+      return result_vec;
+   end por_128;
+
+
+   function to_m128 (vector : in v4t) return sse_vt.m128i is
+      vec_m128_view : sse_vt.m128i with address => vector'address;
+   begin
+      return vec_m128_view;
+   end to_m128;
+
+   function to_v4t (intrinsic_vec : in sse_vt.m128i) return v4t is
+      vec_f32_view: v4t with address => intrinsic_vec'address;
+   begin
+      return vec_f32_view;
+   end to_v4t;
+
+
+
+
+   v1 : sse_vt.m128i;
+   v1_view : v4t := (1.0, 1.0, 1.0, 1.0) with address => v1'address;
+
+   procedure test is
+      v2 : sse_vt.m128i;
+      v2_view : v4t with address => v2'address;
+   begin
+      v2:= ia32_psrldq (v1, 4 * 8);
+      put_line ("after psrlqi");
+      put_line (v1_view (1)'image & v1_view (2)'image & v1_view (3)'image & v1_view (4)'image);
+      put_line (v2_view (1)'image & v2_view (2)'image & v2_view (3)'image & v2_view (4)'image);
+   end test;
+
+
+
+   type byte_array is array (positive range 1 .. 16) of unsigned_8 with pack => true;
+
+   pragma Compile_Time_Error (v4t'size /= byte_array'size, "sizes not the same");
+
+
+
+   --  incorrect? psldq intrunsions shift data opposite to direction in name
+   --  because x86 endianess?
+
+   --  0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+   --  x x x x
+   procedure sl_test (a : in out v4t; ss : in positive) with inline is
+      b_view : byte_array with address => a'address;
+      --ns : positive := 
+   begin
+      b_view := b_view (ss + 1 .. b_view'last) & (1 .. ss => 0);  --  subtract from ss for last index of array of 0s incorrect, ss in starting index of b_view correct?
+--       for i in a'range loop
+--         b_view ()
+--       end loop;
+   end sl_test;
+
+
+   --  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+   --  x x x x x
+
+   procedure sr_test (a : in out v4t; ss : in positive) with inline is
+      b_view : byte_array with address => a'address;
+      --ns : positive := 
+   begin
+      --put_line (b_view (b_view'first .. b_view'last - ss)'length'image);
+      b_view := (1 .. ss => 0) & b_view (b_view'first .. b_view'last - ss);
+--       for i in a'range loop
+--         b_view ()
+--       end loop;
+   end sr_test;
+
+
+   subtype ui32 is unsigned_32;
+
+
+   as_x_axis : aliased constant string := "x";
+   as_y_axis : aliased constant string := "y";
+   as_z_axis : aliased constant string := "z";
+   as_invalid_axis : aliased constant string := "INVALID";
+
+   axis_str : constant array (unsigned_16 range 0 .. 3) of access constant string :=
+     (as_x_axis'access,
+      as_y_axis'access,
+      as_z_axis'access,
+      as_invalid_axis'access);
+
+   unit_vectors : constant array (unsigned_16 range 0 .. 2) of v4t :=
+     ((1.0, 0.0, 0.0, 0.0),   --  x
+      (0.0, 1.0, 0.0, 0.0),   --  y
+      (0.0, 0.0, 1.0, 0.0));  --  z
+
+   scale : constant float := 0.0001;   --  world space scale?
+
+
+   --package vc_kind is
+      type vc_kind is (node, leaf, debug);
+   --end vc_kind;
+
+   type view_cell_node is record
+      frontIndex              : unsigned_16 range 0 .. 8191; -- 13 bits  
+      planeAxis               : unsigned_16 range 0 .. 3;    -- 2 bits   
+      backIndexTopBit         : unsigned_16 range 0 .. 1;    -- 1 bit    
+      backIndexLowerBits      : unsigned_16 range 0 .. 4095; -- 12 bits  
+      planeDistanceTopBits    : unsigned_16 range 0 .. 15;   -- 4 bits   
+      planeDistanceBottomBits : Unsigned_16;
+   end record
+     with pack => true;
+
+   type view_cell_leaf is record
+      isNonLeaf          : unsigned_16;
+      pvsOffsetLowerBits : unsigned_16;
+      pvsOffsetTopBits   : unsigned_8;
+      compressionScheme  : unsigned_8;
+   end record
+     with pack => true;
+
+   type view_cell_debug is record  --  originally array
+      value_1 : unsigned_16;
+      value_2 : unsigned_16;
+      value_3 : unsigned_16;
+   end record
+     with pack => true;
+
+   type view_cell_union (kind : vc_kind := vc_kind'(node)) is record
+      case kind is
+         when vc_kind'(node)  => node  : view_cell_node;
+         when vc_kind'(leaf)  => leaf  : view_cell_leaf;
+         when vc_kind'(debug) => debug : view_cell_debug;
+      end case;
+   end record
+     with pack => true,
+          unchecked_union => true;
+
+   pragma compile_time_error (view_cell_union'size / 8 /= 6, "union not correct size");
+
+
+   type vc_buf_type is array (1 .. 3) of unsigned_16 with pack => true;
+
+
+   type point3 is array (unsigned_16 range 0 .. 2) of float with pack => true;
+   worldMin, worldMax : point3;
+
+
+   --function fvc ()
+
+
+--    subtype positive_32 is unsigned_32 range 1 .. unsigned_32'last;
+-- 
+--    type vc_buf_array is array (positive_32 range <>) of vc_buf_type
+--      with pack => true;
+
+    vc_buf_test : array (unsigned_32 range 1 .. 10_000) of aliased vc_buf_type;
+    vc_union_test : array (unsigned_32 range 1 .. 10_000) of aliased view_cell_union;
+    for vc_union_test'address use vc_buf_test'address;
+
+   --type vc_union
+
+
+   vis_file : sio.file_type;
+   vis_stream : sio.stream_access;
+
+   --vc_buf : access vc_buf_type := vc_buf_test (1)'access;
+
+   --pragma compile_time_error (vc_buf'size / 8 /= 6, "array not correct size");
+
+   --type vc_union_access is access all view_cell_union;
+
+   --vc_union_ref : vc_union_access := vc_union_access (vc_buf);
+   --vc_union : view_cell_union with address => vc_buf.all'address;
+   vc_union : access view_cell_union := null;
+
+
+   plane_distance : unsigned_32;
+   back_index : unsigned_16;
+   pd_tb : unsigned_32;
+   --test_float : float with address => test_int'address;
+
+   num_view_cells : unsigned_32;
+   pvs_list_start : unsigned_32;
+
+   vc_index : positive := 1;
+
+   t_v : v4t := (1.0, 1.0, 1.0, 1.0);
+
+begin
+   --t_v := to_v4t (ia32_pslldq (to_m128 (t_v), 4 * 8));
+   t_v := pslldq (t_v, shift_4_bytes);
+
+   put_line (t_v (1)'image & ascii.lf &
+     t_v (2)'image & ascii.lf &
+     t_v (3)'image & ascii.lf &
+     t_v (4)'image);
+
+   --test;
+--    put_line ("begin shift");
+--    sl_test (t_v, 16);
+--    put_line ("shift end");
+-- 
+--    put_line (t_v (1)'image & ascii.lf &
+--      t_v (2)'image & ascii.lf &
+--      t_v (3)'image & ascii.lf &
+--      t_v (4)'image);
+-- 
+--    sr_test (t_v, 16);
+-- 
+--    put_line (t_v (1)'image & ascii.lf &
+--      t_v (2)'image & ascii.lf &
+--      t_v (3)'image & ascii.lf &
+--      t_v (4)'image);
+   --put_line (test (1, "test"));
+
+   put_line (vc_union_test'has_same_storage (vc_buf_test)'image);
+
+   if cli.argument_count /= 1 then
+      put_line ("file is first arg");
+      return; --cli.failure;
+
+   elsif not dir.exists (cli.argument (1)) or else
+             dir.kind   (cli.argument (1)) = dir.directory
+   then
+      put_line ("file """ & cli.argument (1) & """ does not exist");
+      return;
+   end if;
+
+
+   sio.open (vis_file, sio.in_file, cli.argument (1));
+
+   vis_stream := sio.stream (vis_file);
+
+   sio.set_index (vis_file, 4 + 1);  --  numViewCells
+   unsigned_32'read (vis_stream, num_view_cells);
+   put_line ("view cell count:" & num_view_cells'image);
+
+   sio.set_index (vis_file, 16#20# + 1);  --  viewCellBoundsMin
+   point3'read (vis_stream, worldMin);
+   put_line ("world min y:" & worldMin (1)'image);
+
+   sio.set_index (vis_file, 16#30# + 1);  --  vieweCellBoundsMax
+   point3'read (vis_stream, worldMax);
+
+   sio.set_index (vis_file, 16#18# + 1);  --  pvsListStart
+   unsigned_32'read (vis_stream, pvs_list_start);
+   put_line ("pvs list offset:" & pvs_list_start'image);
+
+   --return;
+   --vc_union := view_cell_union'input (vis_stream);  --  according to ARM this should be legal?
+
+   sio.set_index (vis_file, 128 + 1);  --  viewCellListStart
+
+   --  numViewCells 1-based? (not checked specifically, game code likely just does < numViewCells, = numViewCells - 1?)
+   for vc_num in 1 .. num_view_cells loop
+      vc_buf_type'read (vis_stream, vc_buf_test (vc_num));
+   end loop;
+
+   for vc of vc_union_test loop
+
+      if vc.leaf.isNonLeaf = 0 then
+         put_line ("leaf skip");
+         goto skip_leaf;
+         put_line (vc_union.leaf.compressionScheme'image);
+      end if;
+
+      put_line ("front index:" & vc.node.frontIndex'image);
+
+      back_index := vc.node.backIndexLowerBits or shift_left (vc.node.backIndexTopBit, 12);
+      put_line ("back index:" & back_index'image);
+
+      back_index := vc.node.backIndexLowerBits or shift_left (vc.node.backIndexTopBit, 16);
+      put_line ("back index ls 16:" & back_index'image);
+
+      put_line ("plane axis:" & vc.node.planeAxis'image & " - " & axis_str (vc.node.planeAxis).all);
+
+      plane_distance := ui32 (vc.node.planeDistanceBottomBits)
+        or shift_left (ui32 (vc.node.planeDistanceTopBits), 16);
+        --  top bits must be casted before shift
+
+      --pd_tb := unsigned_32 (vc.node.planeDistanceTopBits);
+
+      put_line ("plane distance int:" & plane_distance'image);
+      put_line ("plane distance:" & float (plane_distance)'image);
+
+
+      declare
+         --p_pos : point3 := (54.54, 2.414, 421.4451);
+         p_pos : v4t := (54.54, 2.414, 421.4451, 10.0);  --  last element radius of sphere
+
+         p_pos_sr_4 : v4t := p_pos;
+         p_pos_sl_c : v4t := p_pos;
+
+         p_pos_sr_8 : v4t := p_pos;
+         p_pos_sl_8 : v4t := p_pos;
+
+         partial_plane : float;
+
+         sr_4_uv : v4t := unit_vectors (vc.node.planeAxis);
+         sl_c_uv : v4t := unit_vectors (vc.node.planeAxis);  --  12
+
+         sr_8_uv : v4t := unit_vectors (vc.node.planeAxis);
+         sl_8_uv : v4t := unit_vectors (vc.node.planeAxis);
+
+         --type v4it is array (positive range 1 .. 4) of unsigned_32;
+
+         --  make function instead?
+         
+--          procedure por_test (v1 : in v4t;  v2_out : in out v4t) is
+--          begin
+--             for v_index in v4t'range loop
+-- 
+--                if v1 (v_index) /= 0.0 and v2_out (v_index) = 0.0 then
+-- 
+--                   v2_out (v_index) := v1 (v_index);
+-- 
+--                elsif v1 (v_index) = 0.0 and v2_out (v_index) /= 0.0 then
+--                   null;  --  no change
+--                end if;
+-- 
+--             end loop;
+--          end por_test;
+-- 
+         procedure mulps_test (v1 : in v4t; v2_out : in out v4t) is
+         begin
+            v2_out (1) := v1 (1) * v2_out (1);
+            v2_out (2) := v1 (2) * v2_out (2);
+            v2_out (3) := v1 (3) * v2_out (3);
+            v2_out (4) := v1 (4) * v2_out (4);
+         end mulps_test;
+
+         procedure addps_test (v1 : in v4t; v2_out : in out v4t) is
+         begin
+            v2_out (1) := v1 (1) + v2_out (1);
+            v2_out (2) := v1 (2) + v2_out (2);
+            v2_out (3) := v1 (3) + v2_out (3);
+            v2_out (4) := v1 (4) + v2_out (4);
+         end addps_test;
+
+         function v4t_image (v : in v4t) return string is
+           (v (1)'image & v (2)'image & v (3)'image & v (4)'image & " ");
+
+      begin
+         --  normal vector for plane for current axis?
+         --  only single axis of vector?
+         partial_plane :=
+           (worldMax (vc.node.planeAxis) - worldMin (vc.node.planeAxis))
+             * scale
+             * float (plane_Distance)
+             + worldMin (vc.node.planeAxis);
+
+--          p_pos :=
+--            (p_pos (0) * unit_vectors (vc.node.planeAxis, 0),
+--             p_pos (1) * unit_vectors (vc.node.planeAxis, 1),
+--             p_pos (2) * unit_vectors (vc.node.planeAxis, 2));
+
+         mulps_test (unit_vectors (vc.node.planeAxis), v2_out => p_pos);
+--          p_pos (1) := p_pos (1) * unit_vectors (vc.node.planeAxis) (1);  --  x
+--          p_pos (2) := p_pos (2) * unit_vectors (vc.node.planeAxis) (2);  --  y
+--          p_pos (3) := p_pos (3) * unit_vectors (vc.node.planeAxis) (3);  --  z
+--          p_pos (4) := p_pos (4) * unit_vectors (vc.node.planeAxis) (4);  --  radius (multiply by last 0 in unit vector always makes not used?)
+
+         --sr_test (sr_4_uv, 4);
+         sr_4_uv := psrldq (sr_4_uv, shift_4_bytes);
+         --sl_test (sl_c_uv, 16#C#);
+         sl_c_uv := pslldq (sl_c_uv, shift_12_bytes);  --  0xc
+
+         --por_test (sr_4_uv, v2_out => sl_c_uv);
+         sl_c_uv := por_128 (sr_4_uv, sl_c_uv);
+
+         --sr_test (p_pos_sr_4, 4);
+         p_pos_sr_4 := psrldq (p_pos_sr_4, shift_4_bytes);
+         --sl_test (p_pos_sl_c, 16#c#);
+         p_pos_sl_c := pslldq (p_pos_sl_c, shift_12_bytes);  --  0xc
+
+         --por_test (p_pos_sr_4, v2_out => p_pos_sl_c);
+         p_pos_sl_c := por_128 (p_pos_sr_4, p_pos_sl_c);
+
+
+         mulps_test (sl_c_uv, v2_out => p_pos_sl_c);
+
+         put_line ("before add             " & v4t_image (p_pos_sl_c));
+
+         addps_test (p_pos, v2_out => p_pos_sl_c);       --   <---
+
+         put_line ("original               " & v4t_image (p_pos));
+         put_line ("after multiply and add " & v4t_image (p_pos_sl_c));
+
+                                                         --      |
+                                                         --      |
+         --sr_test (sr_8_uv, 8);                           --      |
+         sr_8_uv := psrldq (sr_8_uv, shift_8_bytes);
+         --sl_test (sl_8_uv, 8);                           --      |
+         sl_8_uv := pslldq (sl_8_uv, shift_8_bytes);
+         --por_test (sr_8_uv, v2_out => sl_8_uv);          --      |
+         sl_8_uv := por_128 (sr_8_uv, sl_8_uv);
+                                                         --      |
+         --sr_test (p_pos_sr_8, 8);                        --      |
+         p_pos_sr_8 := psrldq (p_pos_sr_8, shift_8_bytes);
+         --sl_test (p_pos_sl_8, 8);                        --      |
+         p_pos_sl_8 := pslldq (p_pos_sl_8, shift_8_bytes);
+         --por_test (p_pos_sr_8, v2_out => p_pos_sl_8);    --      |
+         p_pos_sl_8 := por_128 (p_pos_sr_8, p_pos_sl_8);
+                                                         --      |
+                                                         --      |
+         mulps_test (sl_8_uv, v2_out => p_pos_sl_8);     --      |
+         addps_test (p_pos_sl_c, v2_out => p_pos_sl_8);  --   <---
+
+         put_line (v4t_image (p_pos_sl_8));
+
+
+         put_line ("world bounds value:" & partial_plane'image);
+         put_line ("unit vector and position value:" & p_pos_sl_8 (1)'image);
+
+--          declare
+--             ui32_view : v4it with address => 
+--          sr_4_uv (1) := sr_4_uv (1) or sr_4_uv (1);
+      end;
+
+      --return;
+
+      << skip_leaf >>
+
+      exit when ui32 (vc_index) = num_view_cells;
+
+      vc_index := vc_index + 1;
+      new_line (2);
+   end loop;
+
+--       vc_union := vc_union_test (vc_num)'access;
+-- 
+--       if vc_union.leaf.isNonLeaf = 0 then
+--          put_line ("leaf skip");
+--          goto skip_leaf;
+-- 
+--          put_line (vc_union.leaf.compressionScheme'image);
+-- 
+--       end if;
+-- 
+--       put_line ("front index:" & vc_union.node.frontIndex'image);
+-- 
+--       back_index := vc_union.node.backIndexLowerBits or shift_left (vc_union.node.backIndexTopBit, 12);
+--       put_line ("back index:" & back_index'image);
+-- 
+--       back_index := vc_union.node.backIndexLowerBits or shift_left (vc_union.node.backIndexTopBit, 16);
+--       put_line ("back index ls 16:" & back_index'image);
+-- 
+--       put_line ("plane axis:" & vc_union.node.planeAxis'image & " - " & axis_str (vc_union.node.planeAxis).all);
+-- 
+--       --put_line ("b:" & vc_union.node.planeDistanceBottomBits'image);
+--       --put_line ("t" & vc_union.node.planeDistanceTopBits'image);
+-- 
+--       plane_distance := ui32 (vc_union.node.planeDistanceBottomBits)
+--         or shift_left (ui32 (vc_union.node.planeDistanceTopBits), 16);
+--         --  top bits must be casted before shift
+-- 
+--       --pd_tb := unsigned_32 (vc_union.node.planeDistanceTopBits);
+-- 
+--       put_line ("plane distance int:" & plane_distance'image);
+--       put_line ("plane distance:" & float (plane_distance)'image);
+-- 
+--       --put_line (test_float'image);
+-- 
+--       --test_float := float (test_int);
+--       --put_line (test_float'image);  --  not correct
+-- 
+--       <<skip_leaf>>
+-- 
+--       new_line;
+--       --put_line ("num:" & vc_num'image);
+
+
+   put_line ("file index:" & sio.positive_count'image (sio.index (vis_file) + 1));
+   null;
+
+   sio.close (vis_file);
+
+   return;
+
+end view_cell_read_test;

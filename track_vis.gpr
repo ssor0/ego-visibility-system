@@ -1,0 +1,16 @@
+project track_vis is
+
+   for main use ("track_vis", "telemetry_read_test");
+
+   for source_dirs use ("src");
+   for object_dir use "obj";
+
+   for exec_dir use "bin";
+
+   package compiler is
+      for Default_Switches ("Ada") use
+        ("-gnata");
+   end compiler;
+
+
+end track_vis;

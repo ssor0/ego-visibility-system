@@ -1,0 +1,890 @@
+with ada.text_io; use ada.text_io;
+with ada.command_line;
+with ada.streams.stream_io;
+with ada.directories;
+
+with interfaces; use interfaces;
+
+with system;
+
+with gnat.sse;
+with gnat.sse.vector_types;
+with gnat.sockets;
+with gnat.os_lib;
+
+with udp_streams;
+
+with ego_telemetry;
+
+
+procedure view_cell_read_test is --return ada.command_line.exit_status is
+
+   package SIO renames ada.streams.stream_io;
+   use type sio.count;
+
+   package CLI renames ada.command_line;
+
+   package Dir renames ada.directories;
+   use type dir.file_kind;
+
+   package sse_vt renames gnat.sse.vector_types;
+   package sse renames gnat.sse;
+
+   package os renames gnat.os_lib;
+
+
+   --package globals is
+   --end globals;
+
+   --  makes more sense to make separate package so variables exist
+   --  at package level scope (and other?)?
+
+   --  or?
+
+   -- type program_globals_type is record
+
+
+
+
+   function ia32_psrldq (vector : sse_vt.m128i; shift_amount : integer) return sse_vt.m128i
+     with import, inline_always, external_name => "__builtin_ia32_psrldqi128", convention => intrinsic;
+   --pragma Import (Intrinsic, ia32_psrldq, "__builtin_ia32_psrldqi128");
+
+   function ia32_pslldq (vector : sse_vt.m128i; shift_amount : integer) return sse_vt.m128i
+     with import, inline_always, external_name => "__builtin_ia32_pslldqi128", convention => intrinsic;
+
+
+   function ia32_por128 (left, right : in  sse_vt.m128i) return sse_vt.m128i
+     with import, inline_always, external_name => "__builtin_ia32_por128", convention => intrinsic;
+
+
+   type v4t is array (positive range 1 .. 4) of float
+     with alignment => sse.vector_align,
+          pack      => true;
+   pragma Machine_Attribute (v4t, "vector_type");
+   pragma Machine_Attribute (v4t, "may_alias");
+
+   function ia32_mulps (left, right : in v4t) return v4t
+     with import, inline_always, external_name => "__builtin_ia32_mulps", convention => intrinsic;
+
+   function ia32_addps (left, right : in v4t) return v4t
+     with import, inline_always, external_name => "__builtin_ia32_addps", convention => intrinsic;
+
+   --function "*" (left, right : in v4t) return v4t
+   --  with import, inline_always, external_name => "__builtin_ia32_mulps", convention => intrinsic;
+
+
+--    function imm (value : in integer) return integer is
+--      (value) with inline, static;
+
+
+   type byte_shift_amount is
+     (shift_1_byte,
+      shift_2_bytes,
+      shift_3_bytes,
+      shift_4_bytes,
+      shift_5_bytes,
+      shift_6_bytes,
+      shift_7_bytes,
+      shift_8_bytes,
+      shift_9_bytes,
+      shift_10_bytes,
+      shift_11_bytes,
+      shift_12_bytes,
+      shift_13_bytes,
+      shift_14_bytes,
+      shift_15_bytes,
+      shift_16_bytes);
+
+
+   --  unchecked union?
+
+   function psrldq (vector : in v4t; shift : in byte_shift_amount) return v4t with inline is
+      vec_m128_view : sse_vt.m128i with address => vector'address;
+
+      result_vec       : v4t;
+      result_m128_view : sse_vt.m128i with address => result_vec'address;
+   begin
+      case shift is
+         when shift_1_byte => result_m128_view := ia32_psrldq (vec_m128_view, 1 * 8);
+         when shift_2_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 2 * 8);
+         when shift_3_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 3 * 8);
+         when shift_4_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 4 * 8);
+         when shift_5_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 5 * 8);
+         when shift_6_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 6 * 8);
+         when shift_7_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 7 * 8);
+         when shift_8_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 8 * 8);
+         when shift_9_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 9 * 8);
+         when shift_10_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 10 * 8);
+         when shift_11_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 11 * 8);
+         when shift_12_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 12 * 8);
+         when shift_13_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 13 * 8);
+         when shift_14_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 14 * 8);
+         when shift_15_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 15 * 8);
+         when shift_16_bytes => result_m128_view := ia32_psrldq (vec_m128_view, 16 * 8);
+      end case;
+      return result_vec;
+   end psrldq;
+
+
+   function pslldq (vector : in v4t; shift : in byte_shift_amount) return v4t with inline is
+      vec_m128_view : sse_vt.m128i with address => vector'address;
+
+      result_vec       : v4t;
+      result_m128_view : sse_vt.m128i with address => result_vec'address;
+   begin
+      case shift is
+         when shift_1_byte => result_m128_view := ia32_pslldq (vec_m128_view, 1 * 8);
+         when shift_2_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 2 * 8);
+         when shift_3_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 3 * 8);
+         when shift_4_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 4 * 8);
+         when shift_5_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 5 * 8);
+         when shift_6_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 6 * 8);
+         when shift_7_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 7 * 8);
+         when shift_8_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 8 * 8);
+         when shift_9_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 9 * 8);
+         when shift_10_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 10 * 8);
+         when shift_11_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 11 * 8);
+         when shift_12_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 12 * 8);
+         when shift_13_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 13 * 8);
+         when shift_14_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 14 * 8);
+         when shift_15_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 15 * 8);
+         when shift_16_bytes => result_m128_view := ia32_pslldq (vec_m128_view, 16 * 8);
+      end case;
+      return result_vec;
+   end pslldq;
+
+
+   function por_128 (vector_1, vector_2 : in v4t) return v4t with inline is
+      vec1_m128_view : sse_vt.m128i with address => vector_1'address;
+      vec2_m128_view : sse_vt.m128i with address => vector_2'address;
+
+      result_vec       : v4t;
+      result_m128_view : sse_vt.m128i with address => result_vec'address;
+   begin
+      result_m128_view := ia32_por128 (vec1_m128_view, vec2_m128_view);
+      return result_vec;
+   end por_128;
+
+
+   function to_m128 (vector : in v4t) return sse_vt.m128i is
+      vec_m128_view : sse_vt.m128i with address => vector'address;
+   begin
+      return vec_m128_view;
+   end to_m128;
+
+   function to_v4t (intrinsic_vec : in sse_vt.m128i) return v4t is
+      vec_f32_view: v4t with address => intrinsic_vec'address;
+   begin
+      return vec_f32_view;
+   end to_v4t;
+
+
+
+   type byte_array is array (positive range 1 .. 16) of unsigned_8 with pack => true;
+
+   pragma Compile_Time_Error (v4t'size /= byte_array'size, "sizes not the same");
+
+
+   --  incorrect? psldq intrunsions shift data opposite to direction in name
+   --  because x86 endianess?
+
+   --  0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+   --  x x x x
+   procedure sl_test (a : in out v4t; ss : in positive) with inline is
+      b_view : byte_array with address => a'address;
+      --ns : positive := 
+   begin
+      b_view := b_view (ss + 1 .. b_view'last) & (1 .. ss => 0);  --  subtract from ss for last index of array of 0s incorrect, ss in starting index of b_view correct?
+--       for i in a'range loop
+--         b_view ()
+--       end loop;
+   end sl_test;
+
+
+   --  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+   --  x x x x x
+
+   procedure sr_test (a : in out v4t; ss : in positive) with inline is
+      b_view : byte_array with address => a'address;
+      --ns : positive := 
+   begin
+      --put_line (b_view (b_view'first .. b_view'last - ss)'length'image);
+      b_view := (1 .. ss => 0) & b_view (b_view'first .. b_view'last - ss);
+--       for i in a'range loop
+--         b_view ()
+--       end loop;
+   end sr_test;
+
+
+   subtype ui32 is unsigned_32;
+
+
+   as_x_axis : aliased constant string := "x";
+   as_y_axis : aliased constant string := "y";
+   as_z_axis : aliased constant string := "z";
+   as_invalid_axis : aliased constant string := "INVALID";
+
+   axis_str : constant array (unsigned_16 range 0 .. 3) of access constant string :=
+     (as_x_axis'access,
+      as_y_axis'access,
+      as_z_axis'access,
+      as_invalid_axis'access);
+
+   unit_vectors : constant array (unsigned_16 range 0 .. 2) of v4t :=
+     ((1.0, 0.0, 0.0, 0.0),   --  x
+      (0.0, 1.0, 0.0, 0.0),   --  y
+      (0.0, 0.0, 1.0, 0.0));  --  z
+
+   scale : constant float := 0.0000009536752; --0.0001;   --  world space scale?
+
+
+   --package vc_kind is
+      type vc_kind is (node, leaf, debug);
+   --end vc_kind;
+
+   type view_cell_node is record
+      frontIndex              : unsigned_16 range 0 .. 8191; -- 13 bits  
+      planeAxis               : unsigned_16 range 0 .. 3;    -- 2 bits   
+      backIndexTopBit         : unsigned_16 range 0 .. 1;    -- 1 bit    
+      backIndexLowerBits      : unsigned_16 range 0 .. 4095; -- 12 bits  
+      planeDistanceTopBits    : unsigned_16 range 0 .. 15;   -- 4 bits   
+      planeDistanceBottomBits : Unsigned_16;
+   end record
+     with pack => true;
+
+   type view_cell_leaf is record
+      isNonLeaf          : unsigned_16;
+      pvsOffsetLowerBits : unsigned_16;
+      pvsOffsetTopBits   : unsigned_8;
+      compressionScheme  : unsigned_8;
+   end record
+     with pack => true;
+
+   type view_cell_debug is record  --  originally array
+      value_1 : unsigned_16;
+      value_2 : unsigned_16;
+      value_3 : unsigned_16;
+   end record
+     with pack => true;
+
+   type view_cell_union (kind : vc_kind := vc_kind'(node)) is record
+      case kind is
+         when vc_kind'(node)  => node  : view_cell_node;
+         when vc_kind'(leaf)  => leaf  : view_cell_leaf;
+         when vc_kind'(debug) => debug : view_cell_debug;
+      end case;
+   end record
+     with pack => true,
+          unchecked_union => true;
+
+   pragma compile_time_error (view_cell_union'size / 8 /= 6, "union not correct size");
+
+
+   type vc_buf_type is array (1 .. 3) of unsigned_16 with pack => true;
+
+
+   type point3 is array (unsigned_16 range 0 .. 2) of float with pack => true;
+   worldMin, worldMax : point3;
+
+
+   --function fvc ()
+
+
+--    subtype positive_32 is unsigned_32 range 1 .. unsigned_32'last;
+-- 
+--    type vc_buf_array is array (positive_32 range <>) of vc_buf_type
+--      with pack => true;
+
+
+
+
+
+   num_view_cells : unsigned_32;
+
+
+
+
+
+   no_leaf_error : exception;
+
+
+
+   function v4t_image (v : in v4t) return string is
+     (v (1)'image & v (2)'image & v (3)'image & v (4)'image & " ");
+
+
+   type vc_union_array is array (unsigned_32 range <>) of aliased view_cell_union;
+
+
+    --vc_buf_test : array (unsigned_32 range 1 .. 10_000) of aliased vc_buf_type;
+    view_cells : vc_union_array (1 .. 10_000);
+
+
+   type debug_type is record
+      vc : view_cell_union;
+
+      plane_distance : ui32;
+      back_index : unsigned_16;
+      position : v4t;
+      side : character;
+   end record;
+
+   r_count : natural := 0;
+   vc_last_50 : array (0 .. 49) of debug_type;
+
+   procedure handle_r_limit is
+   begin
+      put_line ("last 50 vc");
+      new_line;
+      for d of vc_last_50 loop
+         if d.vc.leaf.isNonLeaf /= 0 then
+            put_line ("position: " & v4t_image (d.position));
+            put_line ("side: " & d.side);
+            put_line ("plane axis: " & axis_str (d.vc.node.planeAxis).all);
+            put_line ("plane distance" & float (d.plane_distance)'image);
+            put_line ("front index:" & d.vc.node.frontIndex'image);
+            put_line ("back_index:" & d.back_index'image);
+         else
+            --  leaf
+            null;
+         end if;
+         new_line (2);
+      end loop;
+   end handle_r_limit;
+
+
+--  test
+--    function findViewCell
+--      (parent : in vc_union_array;
+--       p_pos  : in v4t) return view_cell_leaf
+   function findViewCell
+     (vc : in view_cell_union;
+      p_pos  : in v4t) return view_cell_leaf
+   is
+
+      use type system.address;
+
+--  test
+--       vc : constant view_cell_union := parent (parent'first);
+
+      plane_distance : constant unsigned_32 :=
+        ui32 (vc.node.planeDistanceBottomBits)
+          or shift_left (ui32 (vc.node.planeDistanceTopBits), 16);
+          --  top bits must be casted before shift
+
+      back_index : constant unsigned_16 := vc.node.backIndexLowerBits or
+        shift_left (vc.node.backIndexTopBit, 12);  --  correct?
+
+
+      --  technically dot product equation but only single axis of each
+      --  element involved (normal vector, plane distance)?
+      plane : constant float :=
+        (worldMax (vc.node.planeAxis) - worldMin (vc.node.planeAxis))  --  normal vector
+          * scale
+          * float (plane_Distance)  --  distance (from origin?) to point on plane
+          + worldMin (vc.node.planeAxis);
+
+
+      --vc_index : positive := 1;
+      next_index : unsigned_32;
+
+   begin
+      if r_count = 49 then
+         return vc.leaf;  -- possible not valid data
+      end if;
+
+      if vc.leaf.isNonLeaf = 0 then
+         --put_line ("leaf skip");
+      --put_line ("leaf reached");
+         --goto skip_leaf;
+      --put_line (vc.leaf.compressionScheme'image);
+         return vc.leaf;
+      end if;
+
+--       put_line (axis_str (vc.node.planeAxis).all & " world min - world min" &
+--         float'image ((worldMax (vc.node.planeAxis) - worldMin (vc.node.planeAxis))));
+-- 
+--       put_line (axis_str (vc.node.planeAxis).all & " scaled world min - world min" &
+--         float'image (scale * (worldMax (vc.node.planeAxis) - worldMin (vc.node.planeAxis))));
+
+--       put_line ("front index:" & vc.node.frontIndex'image);
+--       put_line ("back index:" & back_index'image);
+--       put_line ("plane axis:" & vc.node.planeAxis'image & " - " & axis_str (vc.node.planeAxis).all);
+--       put_line ("plane distance int:" & plane_distance'image);
+--       put_line ("plane distance:" & float (plane_distance)'image);
+
+      declare
+         p_pos_sr_4 : v4t := p_pos;
+         p_pos_sl_c : v4t := p_pos;
+
+         p_pos_sr_8 : v4t := p_pos;
+         p_pos_sl_8 : v4t := p_pos;
+
+         --test : v4t := p_pos_sr_4 * p_pos_sr_4;
+
+         sr_4_uv : v4t := unit_vectors (vc.node.planeAxis);
+         sl_c_uv : v4t := unit_vectors (vc.node.planeAxis);  --  12
+
+         sr_8_uv : v4t := unit_vectors (vc.node.planeAxis);
+         sl_8_uv : v4t := unit_vectors (vc.node.planeAxis);
+
+         p_pos_copy : v4t;
+
+      begin
+
+--          p_pos :=
+--            (p_pos (0) * unit_vectors (vc.node.planeAxis, 0),
+--             p_pos (1) * unit_vectors (vc.node.planeAxis, 1),
+--             p_pos (2) * unit_vectors (vc.node.planeAxis, 2));
+
+         --mulps_test (unit_vectors (vc.node.planeAxis), v2_out => p_pos);
+         p_pos_copy := ia32_mulps (unit_vectors (vc.node.planeAxis), p_pos);
+       --p_pos_copy := unit_vectors (vc.node.planeAxis) * p_pos;
+--          p_pos (1) := p_pos (1) * unit_vectors (vc.node.planeAxis) (1);  --  x
+--          p_pos (2) := p_pos (2) * unit_vectors (vc.node.planeAxis) (2);  --  y
+--          p_pos (3) := p_pos (3) * unit_vectors (vc.node.planeAxis) (3);  --  z
+--          p_pos (4) := p_pos (4) * unit_vectors (vc.node.planeAxis) (4);  --  radius (multiply by last 0 in unit vector always makes not used?)
+
+
+         sr_4_uv := psrldq (sr_4_uv, shift_4_bytes);
+         sl_c_uv := pslldq (sl_c_uv, shift_12_bytes);  --  0xc
+
+         sl_c_uv := por_128 (sr_4_uv, sl_c_uv);
+
+         p_pos_sr_4 := psrldq (p_pos_sr_4, shift_4_bytes);
+         p_pos_sl_c := pslldq (p_pos_sl_c, shift_12_bytes);  --  0xc
+
+         p_pos_sl_c := por_128 (p_pos_sr_4, p_pos_sl_c);
+
+
+         --mulps_test (sl_c_uv, v2_out => p_pos_sl_c);
+         p_pos_sl_c := ia32_mulps (sl_c_uv, p_pos_sl_c);
+
+--          put_line ("before add             " & v4t_image (p_pos_sl_c));
+
+         --addps_test (p_pos, v2_out => p_pos_sl_c);  --  p_pos_sl_c used...
+         p_pos_sl_c := ia32_addps (p_pos, p_pos_sl_c);
+
+--          put_line ("original               " & v4t_image (p_pos));
+--          put_line ("after multiply and add " & v4t_image (p_pos_sl_c));
+
+
+         sr_8_uv := psrldq (sr_8_uv, shift_8_bytes);
+         sl_8_uv := pslldq (sl_8_uv, shift_8_bytes);
+         sl_8_uv := por_128 (sr_8_uv, sl_8_uv);
+
+         p_pos_sr_8 := psrldq (p_pos_sr_8, shift_8_bytes);
+         p_pos_sl_8 := pslldq (p_pos_sl_8, shift_8_bytes);
+         p_pos_sl_8 := por_128 (p_pos_sr_8, p_pos_sl_8);
+
+         --mulps_test (sl_8_uv, v2_out => p_pos_sl_8);
+         p_pos_sl_8 := ia32_mulps (sl_8_uv, p_pos_sl_8);
+         --addps_test (p_pos_sl_c, v2_out => p_pos_sl_8);  --  here
+         p_pos_sl_8 := ia32_addps (p_pos_sl_c, p_pos_sl_8);
+
+         --put_line (v4t_image (p_pos_sl_8));  --  print first element
+
+
+
+--   once getting past certain position in map on certain axis something
+--   goes wrong
+--
+--     - scale constant?
+
+--     - world bound scaled?
+
+--     - scale of player pos?
+
+
+      vc_last_50 (r_count) := (vc, plane_distance, back_index, p_pos, ' ');
+
+
+
+         if p_pos_sl_8 (1) >= plane then
+         --  infront of plane?
+            --put_line ("infront of plane?");
+            --vc.node.frontIndex
+
+            next_index := ui32 (vc.node.frontIndex);
+            --next_index := back_Index;
+
+            vc_last_50 (r_count).side := 'f';
+         else
+         --  behind plane?
+            --put_line ("behind plane?");
+
+            next_index := ui32 (back_Index);
+            --next_index := vc.node.frontIndex;
+
+            vc_last_50 (r_count).side := 'b';
+
+         end if;
+
+        -- put_line ("vc byte offset:" & positive'image (vc_index * 6));
+--          put_line ("front index offset:" & unsigned_16 (vc.node.frontIndex + (vc.node.frontIndex * 2))'image);
+--          put_line ("back index offset:" & unsigned_16 (back_index + (back_index * 2))'image);
+-- 
+-- 
+--          put_line ("plane (location?):" & plane'image);
+--          put_line ("unit vector and position value:" & p_pos_sl_8 (1)'image);
+      end;
+
+      --return;
+
+      r_count := r_count + 1;
+
+
+      << skip_leaf >>
+
+      --put_line ("vc index:" & vc_index'image);
+
+      --exit when ui32 (vc_index) = num_view_cells;
+
+      --new_line (2);
+
+      --put_line (parent'length'image);
+
+      --  may not work
+--       if vc'address = vc_union_test (unsigned_16 (num_view_cells))'address then
+--          raise no_leaf_error with "reached end of view cell list before finding leaf cell";
+--       end if;
+
+--  test
+--       if ui32 (parent'first) >= num_view_cells then
+--          raise no_leaf_error with "reached end of view cell list before finding leaf cell";
+--       end if;
+
+      --put_line ("next index: " & next_index'image);
+
+      return findViewCell
+        (vc => view_cells (next_index),
+         p_pos  => p_pos);
+
+--  test
+--       return findViewCell
+--         (parent => vc_union_test (next_index .. vc_union_test'last),
+--          p_pos  => p_pos);
+
+      --vc_index := vc_index + 1;
+
+   end findViewCell;
+
+
+   procedure nodes_to_txt is
+      txt_file : file_type;
+
+
+      plane_distance : unsigned_32;
+      back_index : unsigned_16;
+
+      pvs_offset : unsigned_32;
+
+      node_index : positive := 1;
+      leaf_index : positive := 1;
+
+      vc : view_cell_union;
+
+   begin
+      --if dir.exists ("vc_nodes.txt")
+      create (txt_file, out_file, "vc_nodes.txt");
+      --reset (txt_file);
+      put_line (txt_file, "header (num view cells and indices converted to 1 based)");
+      put_line (txt_file, "num view cells:" & num_view_cells'image);
+      put_line (txt_file, "worldMin xyz" & worldMin (0)'image &  worldMin (1)'image & worldMin (2)'image);
+      put_line (txt_file, "worldMax xyz" & worldMax (0)'image &  worldMax (1)'image & worldMax (2)'image);
+      new_line (txt_file, 2);
+
+
+      for vc_index in 1 .. num_view_cells loop  --  if vc_union_test ever not 1based thiis has to be changed
+
+         vc := view_cells (vc_index);
+
+         if vc.leaf.isNonLeaf /= 0 then
+         --  node
+
+            put_line (txt_file, "node index:" & node_index'image);
+            new_line (txt_file);
+
+            put_line (txt_file, "plane axis: " & axis_str (vc.node.planeAxis).all);
+
+            plane_distance := ui32 (vc.node.planeDistanceBottomBits) or
+              shift_left (ui32 (vc.node.planeDistanceTopBits), 16);
+            --  top bits must be casted before shift
+
+            put_line (txt_file, "plane distance" & plane_distance'image);
+
+
+            put_line (txt_file, "front index:" & vc.node.frontIndex'image);
+
+            back_index := vc.node.backIndexLowerBits or
+              shift_left (vc.node.backIndexTopBit, 12);  --  correct?
+
+            put_line (txt_file, "back_index:" & back_index'image);
+
+            new_line (txt_file, 2);
+
+            node_index := node_index + 1;
+
+         else
+         --  leaf
+
+            put_line (txt_file, "leaf index:" & leaf_index'image);
+
+            pvs_offset := ui32 (vc.leaf.pvsOffsetLowerBits) or
+              shift_left (ui32 (vc.leaf.pvsOffsetTopBits), 16);
+
+            put_line (txt_file, "pvs offset:" & pvs_offset'image);
+            --put_line (txt_file, );
+
+            new_line (txt_file, 2);
+
+            leaf_index := leaf_index + 1;
+         end if;
+
+      end loop;
+
+      close (txt_file);
+   end nodes_to_txt;
+
+
+
+
+   Bind_Address : constant gnat.sockets.Sock_Addr_Type :=
+     (Family => gnat.sockets.Family_Inet,
+      Addr   => gnat.sockets.Loopback_Inet_Addr,
+      Port   => 20777);
+
+   NL : constant String := ascii.lf & ascii.cr;
+
+   udp_sock : gnat.sockets.socket_type;
+   udp_stream : aliased udp_streams.udp_stream_type (1024);
+
+   td_1 : ego_telemetry.telemetry_format_1;
+
+
+   afplay_file_name : aliased string := "/Users/oswald/64item.wav";
+   afplay_arg : constant os.argument_list := (1 => afplay_file_name'unrestricted_access);
+   afplay_pid : os.process_id;
+
+
+   vis_file : sio.file_type;
+   vis_stream : sio.stream_access;
+
+   --vc_buf : access vc_buf_type := vc_buf_test (1)'access;
+
+   --pragma compile_time_error (vc_buf'size / 8 /= 6, "array not correct size");
+
+   --type vc_union_access is access all view_cell_union;
+
+   --vc_union_ref : vc_union_access := vc_union_access (vc_buf);
+   --vc_union : view_cell_union with address => vc_buf.all'address;
+   vc_union : access view_cell_union := null;
+
+
+   plane_distance : unsigned_32;
+   back_index : unsigned_16;
+   pd_tb : unsigned_32;
+   --test_float : float with address => test_int'address;
+
+
+   pvs_offset : unsigned_32;
+   last_pvs_offset : unsigned_32 := 0;
+
+
+   pvs_list_start : unsigned_32;
+
+   t_v : v4t := (1.0, 1.0, 1.0, 1.0);
+
+   --p_pos : point3 := (54.54, 2.414, 421.4451);
+   p_pos : v4t := (54.54, 2.414, 421.4451, 10.0);  --  last element radius of sphere
+
+   vc_leaf : view_cell_leaf;
+
+   use type os.process_id;
+
+begin
+   --t_v := to_v4t (ia32_pslldq (to_m128 (t_v), 4 * 8));
+   t_v := pslldq (t_v, shift_4_bytes);
+
+   put_line (t_v (1)'image & ascii.lf &
+     t_v (2)'image & ascii.lf &
+     t_v (3)'image & ascii.lf &
+     t_v (4)'image);
+
+   --test;
+--    put_line ("begin shift");
+--    sl_test (t_v, 16);
+--    put_line ("shift end");
+-- 
+--    put_line (t_v (1)'image & ascii.lf &
+--      t_v (2)'image & ascii.lf &
+--      t_v (3)'image & ascii.lf &
+--      t_v (4)'image);
+-- 
+--    sr_test (t_v, 16);
+-- 
+--    put_line (t_v (1)'image & ascii.lf &
+--      t_v (2)'image & ascii.lf &
+--      t_v (3)'image & ascii.lf &
+--      t_v (4)'image);
+   --put_line (test (1, "test"));
+
+   --put_line (vc_union_test'has_same_storage (vc_buf_test)'image);
+
+   if cli.argument_count < 1 then
+      put_line ("file is first arg");
+      return; --cli.failure;
+
+   elsif not dir.exists (cli.argument (1)) or else
+             dir.kind   (cli.argument (1)) = dir.directory
+   then
+      put_line ("file """ & cli.argument (1) & """ does not exist");
+      return;
+   end if;
+
+
+   sio.open (vis_file, sio.in_file, cli.argument (1));
+
+   vis_stream := sio.stream (vis_file);
+
+   sio.set_index (vis_file, 4 + 1);  --  numViewCells, actually is 1 based due to padding?
+   unsigned_32'read (vis_stream, num_view_cells);
+   --num_view_cells := num_view_cells + 1;  --  should technically be + 1
+                                     -- to make 1 based but last view cell
+                                     --  
+                      --   ! does this mess up other things?
+   put_line ("view cell count:" & num_view_cells'image);
+
+
+   if num_view_cells > ui32 (view_cells'last) then
+      put_line ("number of view cells greater than statically sized array");
+      return;
+   end if;
+
+
+   sio.set_index (vis_file, 16#20# + 1);  --  viewCellBoundsMin
+   point3'read (vis_stream, worldMin);
+   --put_line ("world min y:" & worldMin (1)'image);
+
+   sio.set_index (vis_file, 16#30# + 1);  --  vieweCellBoundsMax
+   point3'read (vis_stream, worldMax);
+
+   sio.set_index (vis_file, 16#18# + 1);  --  pvsListStart
+   unsigned_32'read (vis_stream, pvs_list_start);
+   put_line ("pvs list offset:" & pvs_list_start'image);
+
+   --vc_union := view_cell_union'input (vis_stream);  --  according to ARM this should be legal?
+
+   --put_line (float'image (16#38D1B717.0#));
+   --new_line(2);
+
+
+   put_line ("worldMin xyz" & worldMin (0)'image &  worldMin (1)'image & worldMin (2)'image);
+   put_line ("worldMax xyz" & worldMax (0)'image &  worldMax (1)'image & worldMax (2)'image);
+
+   new_line;
+
+   sio.set_index (vis_file, 128 + 1);  --  viewCellListStart
+
+   --  old, incorrect: numViewCells 1-based? (not checked specifically, game code likely just does < numViewCells, = numViewCells - 1?)
+   for vc_num in 1 .. num_view_cells loop
+      --put_line ()
+      declare
+         vc_buf : vc_buf_type with address => view_cells (vc_num)'address;
+      begin
+         vc_buf_type'read (vis_stream, vc_buf);
+      end;
+   end loop;
+
+   put_line ("file index after vc read (should be same as pvs list offset):"
+     & sio.positive_count'image (sio.index (vis_file) - 1));
+     --  subtract from ada 1 based index will match c 0 based
+   sio.close (vis_file);
+
+   for index in 2 .. cli.argument_count loop
+      if cli.argument (index) = "-txt" then
+         nodes_to_txt;
+         return;
+      end if;
+   end loop;
+
+
+
+   gnat.sockets.create_socket
+     (socket => udp_sock,
+      family => gnat.sockets.family_inet,
+      mode   => gnat.sockets.socket_datagram);
+
+   gnat.sockets.bind_socket (udp_sock, bind_address);
+
+   put_line (gnat.sockets.image (bind_address));
+
+   udp_stream.set_socket (udp_sock);
+
+
+   loop
+      <<temp_continue>>
+      ego_telemetry.telemetry_format_1'read (udp_stream'access, td_1);
+
+      td_1.position_y := td_1.position_y + 0.64281435;
+
+--       put_line
+--         ("x: " & td_1.position_x'image & NL &
+--          "y: " & td_1.position_y'image & NL &
+--          "z: " & td_1.position_z'image);
+--       new_line (2);
+--       goto temp_continue;
+      --return;
+
+--       put_line ("before findviewcell");
+
+      vc_leaf := findViewCell
+        (vc => view_cells (view_cells'first),
+         p_pos  => (td_1.position_x, td_1.position_y, td_1.position_z, 0.0));
+
+--  test
+--       vc_leaf := findViewCell
+--         (parent => vc_union_test,
+--          p_pos  => (td_1.position_x, td_1.position_y, td_1.position_z, 0.0));
+
+--       put_line ("after findviewcell");
+
+      if r_count = 49 then
+         put_line ("issue, reached r limit");
+         handle_r_limit;
+         return;
+      end if;
+
+
+      pvs_offset := ui32 (vc_leaf.pvsOffsetLowerBits) or
+        shift_left (ui32 (vc_leaf.pvsOffsetTopBits), 16);
+
+      if pvs_offset /= last_pvs_offset then
+         --afplay_pid := os.non_blocking_spawn ("/usr/bin/afplay", afplay_arg);
+
+         put_line ("called" & r_count'image & " times");
+
+         put_line
+           ("x: " & td_1.position_x'image & NL &
+            "y: " & td_1.position_y'image & NL &
+            "z: " & td_1.position_z'image);
+
+
+         put_line ("_________________________________");
+         put_line ("entered new view cell");
+         put_line ("pvs_offset:" & pvs_offset'image);
+         new_line (2);
+      end if;
+      last_pvs_offset := pvs_offset;
+
+      r_count := 0;
+
+      --return;
+   end loop;
+
+
+
+   return;
+
+end view_cell_read_test;

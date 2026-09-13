@@ -1,0 +1,31 @@
+Report for Ada frontend
+
+
+GCC version:
+  gcc version 15.2.0 (also occurred in 14.1.0)
+
+
+System type
+  macOS 10.13.6 High Sierra:
+  Darwin Kernel Version 17.7.0, root:xnu-4570.71.82.8~1/RELEASE_X86_64 x86_64
+
+
+Options provided to GCC during configure stage:
+  --prefix=/opt/gcc-15.2.0
+  --without-libiconv-prefix
+  --disable-libmudflap
+  --disable-libstdcxx-pch
+  --disable-libsanitizer
+  --disable-libcc1
+  --disable-libcilkrts
+  --disable-multilib
+  --disable-nls
+  --enable-languages=c,c++,ada
+  --host=x86_64-apple-darwin17
+  --target=x86_64-apple-darwin17
+  --build=x86_64-apple-darwin17
+  --without-isl
+  --with-build-sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+  --with-sysroot=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+  --enable-bootstrap
+  --enable-host-pie

@@ -1,5 +1,15 @@
 main source code file `view_cell_read_test.adb`, files in `src/` are outdated
 
+file sections:
+ - view cells, BSP hyperplanes that split along x y or z axis
+ - run length encoded, bit field PVS data for what is visible per view cell. bits for each object node and all static items it contains. if length byte is negative then run is compressed, if positive then run is literal/uncompressed bytes (shouldnt ever be more than 1 or 2 bytes). padded to 16 bytes
+ - object node and static item 3d-tree (kd tree), recursively nested bounding boxes that split track areas along cycling x and z axis (sometimes y), organized in depth first order.
+ bounding boxes for object nodes and items are used for Lod calculation and when the game falls back to dynamic/runtime visibility tests (should mostly be when a full object node is only parttially visible and only the items in it that are within the camera view need to be added)
+   - each object node has a list of every item (3d asset) that are within the bounds it split the track area into (some are empty).
+   each item in the object node contains a layer (what kind of item it is), index (id) for the position it will end up in the array it is loaded into in memory (usually one of the `*Manager` classes, i.e. `OrnamentManager`)
+   and a bounding box.
+- debug view cells, not always in the file (seems to have been left behind on accident in certain games). contains bounding boxes that more clearly visually represent the view cell leaf node that the hyperplanes in the first section end up forming
+
 static item layer ids (index of 0 to 15), unknown layers likely just unused
   - 0: TRACK_BLOCK  (track surface/terrain)
   - 1: GROUND_COVER (grass, small foliage)

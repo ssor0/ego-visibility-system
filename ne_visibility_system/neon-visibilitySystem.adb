@@ -68,7 +68,10 @@ package body neon.visibilitySystem is
       r14 : neuint := 0;  --  ! prev oN visible = 1?
       r13 : neuint := 0;  --  ! prev oN not visible = 1?
 
+      type Objectnode_access is access Objectnode;
+      --oN : access Objectnode := rootNode;
       oN : access Objectnode := rootNode;
+      oN_2 : Objectnode_access;
 
    begin
       loop --oN of rootNode loop
@@ -404,6 +407,11 @@ package body neon.visibilitySystem is
          exit when oN.nextOffset = 0;
 
          oN := next_oN (oN);
+         --  ! causes internal compiler error
+         --    seems to be caused by left side being anonymous access type?
+         --oN := objectNode'Deref (rootNode.all'address + oN.nextOffset)'access;
+         --  !  compiles
+         --oN_2 := objectNode_access'deref (rootNode.all'address + oN.nextOffset);
 
          --  object node ptr + nextOffset;
 

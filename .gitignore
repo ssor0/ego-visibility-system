@@ -1,5 +1,17 @@
 .DS_Store
 
+*.bt
+*.stream
+*.xml
+*.bin
+*.pssg
+*.vis
+*.ens
+
+
+# 3d (for now)
+*.blend*
+*.obj
 
 # Ada
 # Object file
@@ -11,3 +23,6 @@
 *.bexch
 *.stdout
 *.stderr
+
+# gcc assembly ouutput
+*.s

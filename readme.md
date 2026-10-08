@@ -1,4 +1,4 @@
-### (this is very a temporary readme that was quickly written when first creating a repository for this so the information be shared with someone else, i apologize if it looks like it was llm generated. the file format, reverse engineered functions and the code/program will eventually be completely documented and explained in a very in depth manner)
+### (this is very a temporary readme that was quickly written when first creating a repository for this so the information could be shared with someone else, i apologize if it looks like it was llm generated. the file format, reverse engineered functions and the code/program will eventually be completely documented and explained in a very in depth manner)
 
 (this particular system is applicable for every codemasters game from dirt 2 to
 dirt rally 2. race driver grid (2008) and ego 4.0 and later (f1 2015, grid 2019 etc) use a different format/method)
